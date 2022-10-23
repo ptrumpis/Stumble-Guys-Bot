@@ -15,7 +15,7 @@ The bot will join new gaming rounds over and over and claim in-game "Season Pass
 - It will claim rewards for participating in "Round 1"
 - It will do the above all over again
 
-#### What the bot does NOT
+### What the bot does NOT
 - It will not make any effort to win the game
 - It will not make any attempts to bypass obstacles
 - It will not reach the finish line
