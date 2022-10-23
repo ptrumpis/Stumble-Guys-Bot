@@ -1,6 +1,8 @@
 # Stumble Guys Bot
 Season Pass "Stumble Pass" farming bot for the game **Stumble Guys**.
 
+![Stumble Pass](https://github.com/ptrumpis/StumbleGuysBot/blob/main/stumblepass.png "Stumble Pass")
+
 ### About
 This is a click and keyboard bot created with AutoIt v3.
 It will simulate clicks and keyboard movements and help you to complete all season pass rewards real quick.
