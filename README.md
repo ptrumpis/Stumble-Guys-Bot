@@ -9,13 +9,13 @@ It will simulate clicks and keyboard movements and help you to complete all seas
 The bot will join new gaming rounds over and over and claim in-game "Season Pass Stars" as reward.
 
 ### What the bot does
-- It will automatically start play new games from the main menu
+- It will automatically start new games from the main menu
 - It will stumble arround like a 3 year old child and fall to the ground or get stuck
 - It will automatically leave the game after "Round 1"
 - It will claim rewards for participating in "Round 1"
 - It will do the above all over again
 
-#### What ithe bot does NOT
+#### What the bot does NOT
 - It will not make any effort to win the game
 - It will not make any attempts to bypass obstacles
 - It will not reach the finish line
