@@ -1,4 +1,4 @@
-# StumbleGuysBot
+# Stumble Guys Bot
 Season Pass "Stumble Pass" farming bot for the game **Stumble Guys**.
 
 ### About
