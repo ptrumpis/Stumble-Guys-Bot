@@ -1,7 +1,7 @@
 # Stumble Guys Bot
 Season Pass "Stumble Pass" farming bot for the game **Stumble Guys**.
 
-![Stumble Pass](https://github.com/ptrumpis/StumbleGuysBot/blob/main/stumblepass.png "Stumble Pass")
+![Stumble Pass](https://github.com/ptrumpis/StumbleGuysBot/raw/main/stumblepass.png "Stumble Pass")
 
 ### About
 This is a click and keyboard bot created with AutoIt v3.
@@ -34,6 +34,6 @@ You can watch videos on a secondary screen but you can not work, write, chat etc
 
 - Press ESC to terminate the bot any time
 - You need to run the "*StumbleBot.au3*" script with [AutoIt v3](https://www.autoitscript.com/site/autoit/downloads/)
-- Or download the compiled Windows x64 executable file here: [Download](https://github.com/ptrumpis/StumbleGuysBot/blob/main/StumbleBot_x64.exe)
+- Or download the compiled Windows x64 executable file here: [Download](https://github.com/ptrumpis/StumbleGuysBot/raw/main/StumbleBot_x64.exe)
 
 Have Fun
