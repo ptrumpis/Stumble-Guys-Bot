@@ -17,6 +17,9 @@ Func _Main()
 	; Get window handle
 	$hWnd = WinGetHandle($title)
 
+	$centerX = 1920/2;
+	$centerY = 1080/2;
+
 	; (main loop)
 	While 1
 		; Start new game
@@ -26,8 +29,10 @@ Func _Main()
 			
 			; not necessary but helps to determine current state
 			While DetectGameSearch($hWnd) = 1
-				_MouseMoveRandom() ; not necessary
-				_Sleep(1000, 2000)
+				; fake human behavior
+				If Random(0, 2) = 1 Then _MouseMoveRandom()
+
+				_Sleep(500, 1000)
 			WEnd
 
 			; screen transition
@@ -35,18 +40,22 @@ Func _Main()
 
 			; not necessary but helps to determine current state
 			While DetectMapSelection($hWnd) = 1
-				_Send("{ENTER}")
+				; fake human behavior
+				If Random(0, 2) = 1 Then _Send("{SPACE}")
+				If Random(0, 2) = 1 Then _MouseMoveRandom()
 
-				_MouseMoveRandom() ; not necessary
-				_Sleep(1000, 2000)
+				_Sleep(500, 1000)
 			WEnd
-			
+
+			; center mouse
+			_MouseMove(Random($centerX-5, $centerX+5), Random($centerY, $centerY+10));
+
 			; screen transition
 			Sleep(500)
 
 			; not necessary but helps to determine current state
 			While DetectGameStart($hWnd) = 1
-				Sleep(1000)
+				Sleep(500)
 			WEnd
 
 			; There is a 3 second in game counter at the start of each round
@@ -89,7 +98,6 @@ EndFunc
 Func SimulateGamePlay(ByRef $hWnd)
 	Local $n = 4
 	Local $keys[$n] = ["Left", "Right", "Jump", "Run"]
-	Global $mouse[2] = [0, 0];
 
 	For $counter = 1 to $n
 		If DetectGameRunning($hWnd) = 0 Or DetectGameLost($hWnd) = 1 Then
@@ -107,11 +115,9 @@ Func SimulateGamePlay(ByRef $hWnd)
 			Case "Left"
 				$ms = Random(500, 1500)
 				Left($ms)
-				;_MouseMoveEvent(-300, 0)
 			Case "Right"
 				$ms = Random(500, 1500)
 				Right($ms)
-				;_MouseMoveEvent(300, 0)
 			Case "Jump"
 				$ms = Random(100, 500)
 				Jump($ms)
@@ -121,7 +127,7 @@ Func SimulateGamePlay(ByRef $hWnd)
 		EndSwitch
 
 		; Stop running
-		_Sleep(0, 500)
+		_Sleep(0, 1000)
 		_Send("{w up}")
 
 		; Short pause
@@ -297,13 +303,23 @@ Func _LeftClick($x, $y)
 	Sleep(100)
 EndFunc
 
-Func _MouseMoveRandom()
+Func _MouseMove($x, $y, $speed = 20)
+	If WinActive($title) = 0 Then Return
+		
+	MouseMove($x, $y, $speed)
+	Sleep(50)
+EndFunc
+
+Func _MouseMoveRandom($minSpeed = 20, $maxSpeed = 30)
 	If WinActive($title) = 0 Then Return
 
 	; Try to avoid outer borders
-	$x = Random(120, 1800)
-	$y = Random(80, 1000)
-	MouseMove($x, $y, 20)
+	$x = Random(220, 1700)
+	$y = Random(180, 900)
+
+	$speed = Random($minSpeed, $maxSpeed)
+
+	MouseMove($x, $y, $speed)
 	Sleep(100)
 EndFunc
 

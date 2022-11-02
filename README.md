@@ -34,7 +34,7 @@ You can watch videos on a secondary screen but you can not work, write, chat etc
 
 - Press ESC to terminate the bot any time
 - You need to run the "*StumbleBot.au3*" script with [AutoIt v3](https://www.autoitscript.com/site/autoit/downloads/)
-- Or download the compiled Windows x64 executable file here: [Download](https://github.com/ptrumpis/StumbleGuysBot/raw/main/StumbleBot_x64.exe)
+- Or download the compiled Windows x64 executable file here: [Download](https://github.com/ptrumpis/Stumble-Guys-Bot/releases/)
 
 ### Notice: anti virus & malware reports
 The binary file can produce a false positive by your anti virus software. This is a known problem with AutoIt binary files https://www.autoitscript.com/wiki/AutoIt_and_Malware
