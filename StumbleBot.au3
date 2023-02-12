@@ -23,8 +23,17 @@ Func _Main()
 	; (main loop)
 	While 1
 		; Start new game
-		If DetectMainMenu($hWnd) = 1 Then
-			ClickPlayGame()
+		If DetectMainMenu($hWnd) = 1 Or DetectEventMenu($hWnd) = 1 Then
+			If DetectEventAvailable($hWnd) = 1 Then
+				ClickEventMenu()
+				Sleep(1000)
+				ContinueLoop
+			ElseIf DetectEventMenu($hWnd) = 1 Then
+				ClickPlayEvent()
+			Else
+				ClickPlayGame()
+			EndIf
+
 			Sleep(1000)
 			
 			; not necessary but helps to determine current state
@@ -153,6 +162,24 @@ Func Jump($ms = 500)
 	_Send("{SPACE up}")
 EndFunc
 
+Func ClickPlayGame()
+	$x = Random(1538, 1873)
+	$y = Random(921, 1026)
+	_LeftClick($x, $y)
+EndFunc
+
+Func ClickEventMenu()
+	$x = Random(1053, 1465)
+	$y = Random(948, 1033)
+	_LeftClick($x, $y)
+EndFunc
+
+Func ClickPlayEvent()
+	$x = Random(200, 440)
+	$y = Random(915, 980)
+	_LeftClick($x, $y)
+EndFunc
+
 Func DetectMainMenu(ByRef $hWnd)
 	; (Yellow Play Button)
 	$c1 = PixelGetColor(1873, 921, $hWnd)
@@ -167,10 +194,32 @@ Func DetectMainMenu(ByRef $hWnd)
 	Return 0
 EndFunc
 
-Func ClickPlayGame()
-	$x = Random(1538, 1873)
-	$y = Random(921, 1026)
-	_LeftClick($x, $y)
+Func DetectEventAvailable(ByRef $hWnd)
+	; (Event Button)
+	$c1 = PixelGetColor(1050, 943, $hWnd)
+	$hex = Hex($c1, 6)
+	If $hex = "07406F" Then Return 1
+
+	; (Event Button) 2nd check
+	$c2 = PixelGetColor(1225, 949, $hWnd)
+	$hex = Hex($c2, 6)
+	If $hex = "07406F" Then Return 1
+
+	Return 0
+EndFunc
+
+Func DetectEventMenu(ByRef $hWnd)
+	; (Start Button)
+	$c1 = PixelGetColor(200, 915, $hWnd)
+	$hex = Hex($c1, 6)
+	If $hex = "0D89EC" Then Return 1
+
+	; (Start Button) 2nd check
+	$c2 = PixelGetColor(440, 980, $hWnd)
+	$hex = Hex($c2, 6)
+	If $hex = "0B6EE7" Then Return 1
+
+	Return 0
 EndFunc
 
 Func DetectGameSearch(ByRef $hWnd)
