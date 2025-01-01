@@ -1,5 +1,5 @@
 ; Quit Bot with ESC key
-HotKeySet("{ESC}", "_Terminate")
+HotKeySet("{F10}", "_Terminate")
 
 ; Game Title
 Global $title = "Stumble Guys"
@@ -19,9 +19,26 @@ Func _Main()
 
 	$centerX = 1920/2;
 	$centerY = 1080/2;
-
+	
 	; (main loop)
 	While 1
+		
+		If DetectGameLost($hWnd) = 1 Then
+			; Leave game on loss
+			LeaveGame()
+			Sleep(1000)
+		EndIf
+		
+		; Skip the stumble pass/journey level up screens
+		If DetectStumblePassLevelUp($hWnd) = 1 Or DetectStumbleJourneyLevelUp($hWnd) = 1 Then
+			ClickContinue()	
+		EndIf
+
+		; Skip the item received screen
+		If DetectItemReceived($hWnd) = 1 Then
+			ClickOK()	
+		EndIf
+		
 		; Start new game
 		If DetectMainMenu($hWnd) = 1 Or DetectEventMenu($hWnd) = 1 Then
 			If DetectEventAvailable($hWnd) = 1 Then
@@ -35,37 +52,15 @@ Func _Main()
 			EndIf
 
 			Sleep(1000)
-			
-			; not necessary but helps to determine current state
-			While DetectGameSearch($hWnd) = 1
-				; fake human behavior
-				If Random(0, 2) = 1 Then _MouseMoveRandom()
-
-				_Sleep(500, 1000)
-			WEnd
 
 			; screen transition
 			Sleep(500)
-
-			; not necessary but helps to determine current state
-			While DetectMapSelection($hWnd) = 1
-				; fake human behavior
-				If Random(0, 2) = 1 Then _Send("{SPACE}")
-				If Random(0, 2) = 1 Then _MouseMoveRandom()
-
-				_Sleep(500, 1000)
-			WEnd
 
 			; center mouse
 			_MouseMove(Random($centerX-5, $centerX+5), Random($centerY, $centerY+10));
 
 			; screen transition
 			Sleep(500)
-
-			; not necessary but helps to determine current state
-			While DetectGameStart($hWnd) = 1
-				Sleep(500)
-			WEnd
 
 			; There is a 3 second in game counter at the start of each round
 			Sleep(3000)
@@ -74,10 +69,14 @@ Func _Main()
 		; Fault tolerant approach
 		If DetectGameLost($hWnd) = 1 Then
 			; Leave game on loss
-			ClickLeaveGame()
+			LeaveGame()
 			Sleep(1000)
 		ElseIf DetectGetReward($hWnd) = 1 Then
 			; Claim participation reward
+			ClickGetReward()
+			Sleep(1000)
+		ElseIf DetectGetStumbleJourneyReward($hWnd) = 1 Then
+			; Claim stumble journey reward (click anywhere on the screen)
 			ClickGetReward()
 			Sleep(1000)
 		ElseIf DetectGameResults($hWnd) = 1 Then
@@ -180,6 +179,18 @@ Func ClickPlayEvent()
 	_LeftClick($x, $y)
 EndFunc
 
+Func ClickContinue()
+	$x = Random(480, 520)
+	$y = Random(930, 970)
+	_LeftClick($x, $y)
+EndFunc
+
+Func ClickOK()
+	$x = Random(1605, 1645)
+	$y = Random(900, 940)
+	_LeftClick($x, $y)
+EndFunc
+
 Func DetectMainMenu(ByRef $hWnd)
 	; (Yellow Play Button)
 	$c1 = PixelGetColor(1873, 921, $hWnd)
@@ -222,46 +233,71 @@ Func DetectEventMenu(ByRef $hWnd)
 	Return 0
 EndFunc
 
-Func DetectGameSearch(ByRef $hWnd)
-	; (Gray Abort Button) 89A8B3
-	$c1 = PixelGetColor(333, 964, $hWnd)
+Func DetectStumbleJourneyLevelUp(ByRef $hWnd)
+	; (White in Level Up Banner)
+	$c1 = PixelGetColor(770, 149, $hWnd)
 	$hex = Hex($c1, 6)
-	If $hex = "89A8B3" Then Return 1
-
-	; (Gray Abort Button) 7393A0
-	$c2 = PixelGetColor(65, 1022, $hWnd)
-	$hex = Hex($c2, 6)
-	If $hex = "7393A0" Then Return 1
-
-	Return 0
-EndFunc
-
-Func DetectMapSelection(ByRef $hWnd)
-	; (Purple Left Bottom) 9286FF
-	$c1 = PixelGetColor(99, 988, $hWnd)
-	$hex1 = Hex($c1, 6)
-
-	; (Purple Right Bottom) 6878FF
-	$c2 = PixelGetColor(1798, 991, $hWnd)
-	$hex2 = Hex($c2, 6)
-
-	; Both of them should match
-	If $hex1 = "9286FF" And $hex2 = "6878FF" Then Return 1
-
-	Return 0
-EndFunc
-
-Func DetectGameStart(ByRef $hWnd)
-	; (White Screen Banner) FFFFFF
-	$c1 = PixelGetColor(672, 72, $hWnd)
-	$hex1 = Hex($c1, 6)
 	
-	; (White Screen Banner) FFFFFF
-	$c2 = PixelGetColor(1250, 52, $hWnd)
+	; (White in Level Up Banner)
+	$c2 = PixelGetColor(1140, 164, $hWnd)
 	$hex2 = Hex($c2, 6)
+	
+	; (Black in Level Up Banner)
+	$c3 = PixelGetColor(1028, 155, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	; (Blue in Progress Bar)
+	$c4 = PixelGetColor(664, 821, $hWnd)
+	$hex4 = Hex($c4, 6)
+	
+	; (White in Tap To Continue Text)
+	$c5 = PixelGetColor(781, 975, $hWnd)
+	$hex5 = Hex($c5, 6)
+	
+	; All of them should match
+	If $hex = "FFFFFF" And  $hex2 = "FFFFFF" And $hex3 = "000000" And $hex4 = "00DBFA" And $hex5 = "FFFFFF" Then Return 1
 
-	; Both of them should match
-	If $hex1 = "FFFFFF" And $hex2 = "FFFFFF" Then Return 1
+	Return 0
+EndFunc
+
+Func DetectStumblePassLevelUp(ByRef $hWnd)
+	; (Blue Continue Button)
+	$c1 = PixelGetColor(510, 948, $hWnd)
+	$hex = Hex($c1, 6)
+	
+	; (White in Banner)
+	$c2 = PixelGetColor(636, 69, $hWnd)
+	$hex2 = Hex($c2, 6)
+	
+	; (White in Banner)
+	$c3 = PixelGetColor(1279, 70, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	; All of them should match
+	If $hex = "0D89EC" And  $hex2 = "FFFFFF" And $hex3 = "FFFFFF" Then Return 1
+
+	Return 0
+EndFunc
+
+Func DetectItemReceived(ByRef $hWnd)
+	; (White Received Text)
+	$c1 = PixelGetColor(929, 422, $hWnd)
+	$hex = Hex($c1, 6)
+	
+	; (Purple Background)
+	$c2 = PixelGetColor(1040, 385, $hWnd)
+	$hex2 = Hex($c2, 6)
+	
+	; (Green Equip Now Button)
+	$c3 = PixelGetColor(610, 922, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	; (Blue OK Button)
+	$c4 = PixelGetColor(1601, 915, $hWnd)
+	$hex4 = Hex($c4, 6)
+	
+	; All of them should match
+	If $hex = "FFFFFF" And  $hex2 = "7E1CB8" And $hex3 = "55DB1E" And $hex4 = "0D88EC" Then Return 1
 
 	Return 0
 EndFunc
@@ -294,23 +330,55 @@ Func DetectGameResults(ByRef $hWnd)
 EndFunc
 
 Func DetectGameLost(ByRef $hWnd)
-	; (Red Leave Button) F7513F
-	$c1 = PixelGetColor(257, 973, $hWnd)
+	; (Red Leave Button) 
+	$c1 = PixelGetColor(228, 969, $hWnd)
 	$hex = Hex($c1, 6)
-	If $hex = "F7513F" Then Return 1
-
-	; (Red Leave Button)F44131
-	$c2 = PixelGetColor(36, 1033, $hWnd)
-	$hex = Hex($c2, 6)
-	If $hex = "F44131" Then Return 1
-
+	
+	; (Red Leave Button)
+	$c2 = PixelGetColor(29, 994, $hWnd)
+	$hex2 = Hex($c2, 6)
+	
+	; (White Text in Leave Button)
+	$c3 = PixelGetColor(196, 1001, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	If $hex = "F7513F" And $hex2 = "F44C39" And $hex3 = "FFFFFF" Then Return 1
+	
 	Return 0
 EndFunc
 
-Func ClickLeaveGame()
-	$x = Random(36, 257)
-	$y = Random(973, 1033)
-	_LeftClick($x, $y)
+Func LeaveGame()
+	_Send("{ESC}")
+EndFunc
+
+Func DetectGetStumbleJourneyReward(ByRef $hWnd)
+	; (White Congratulations Banner)
+	$c1 = PixelGetColor(611, 43, $hWnd)
+	$hex = Hex($c1, 6)
+	
+	; (White Congratulations Banner)
+	$c2 = PixelGetColor(1276, 50, $hWnd)
+	$hex2 = Hex($c2, 6)
+	
+	; (Black Text in Congratulations Banner)
+	$c3 = PixelGetColor(667, 71, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	; (Yellow Rewards Banner)
+	$c4 = PixelGetColor(947, 130, $hWnd)
+	$hex4 = Hex($c4, 6)
+	
+	; (White Tap To Continue Text)
+	$c5 = PixelGetColor(809, 958, $hWnd)
+	$hex5 = Hex($c5, 6)
+	
+	; (Purple Background)
+	$c6 = PixelGetColor(946, 1004, $hWnd)
+	$hex6 = Hex($c6, 6)
+	
+	If $hex = "FFFFFF" And $hex2 = "FFFFFF" And $hex3 = "333333" And $hex4 = "FFC800" And $hex5 = "FFFFFF" And $hex6 = "251852" Then Return 1
+
+	Return 0
 EndFunc
 
 Func DetectGetReward(ByRef $hWnd)
