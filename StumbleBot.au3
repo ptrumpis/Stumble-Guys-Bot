@@ -33,6 +33,11 @@ Func _Main()
 		If DetectStumblePassLevelUp($hWnd) = 1 Or DetectStumbleJourneyLevelUp($hWnd) = 1 Then
 			ClickContinue()	
 		EndIf
+		
+		; Skip the advert
+		If DetectAdvert($hWnd) = 1 Then
+			ClickAdvertClose()	
+		EndIf
 
 		; Skip the item received screen
 		If DetectItemReceived($hWnd) = 1 Then
@@ -191,6 +196,12 @@ Func ClickOK()
 	_LeftClick($x, $y)
 EndFunc
 
+Func ClickAdvertClose()
+	$x = Random(1553, 1563)
+	$y = Random(124, 134)
+	_LeftClick($x, $y)
+EndFunc
+
 Func DetectMainMenu(ByRef $hWnd)
 	; (Yellow Play Button)
 	$c1 = PixelGetColor(1873, 921, $hWnd)
@@ -298,6 +309,33 @@ Func DetectItemReceived(ByRef $hWnd)
 	
 	; All of them should match
 	If $hex = "FFFFFF" And  $hex2 = "7E1CB8" And $hex3 = "55DB1E" And $hex4 = "0D88EC" Then Return 1
+
+	Return 0
+EndFunc
+
+Func DetectAdvert(ByRef $hWnd)
+	; (Green bottom left purchase button)
+	$c1 = PixelGetColor(719, 919, $hWnd)
+	$hex = Hex($c1, 6)
+	
+	; (Green bottom rifgt purchase button)
+	$c2 = PixelGetColor(1167, 919, $hWnd)
+	$hex2 = Hex($c2, 6)
+	
+	; (Purple top left)
+	$c3 = PixelGetColor(335, 156, $hWnd)
+	$hex3 = Hex($c3, 6)
+	
+	; (Pink bottom right)
+	$c4 = PixelGetColor(1581, 932, $hWnd)
+	$hex4 = Hex($c4, 6)
+	
+	; (Red x button)
+	$c5 = PixelGetColor(1557, 103, $hWnd)
+	$hex5 = Hex($c5, 6)
+	
+	; All of them should match
+	If $hex = "B1FB76" And  $hex2 = "7AB068" And $hex3 = "152ED2" And $hex4 = "CE4F8E" And $hex5 = "F45731" Then Return 1
 
 	Return 0
 EndFunc
