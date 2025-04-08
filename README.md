@@ -32,7 +32,7 @@ The bot will join new gaming rounds over and over and claim in-game "Season Pass
 ### Usage
 You can watch videos on a secondary screen but you can not work, write, chat etc... since the game window has to be in the active input focus.
 
-- Press ESC to terminate the bot any time
+- Press F10 to terminate the bot any time
 - You need to run the "*StumbleBot.au3*" script with [AutoIt v3](https://www.autoitscript.com/site/autoit/downloads/)
 - Or download the compiled Windows x64 executable file here: [Download](https://github.com/ptrumpis/Stumble-Guys-Bot/releases/)
 
