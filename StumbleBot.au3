@@ -26,7 +26,7 @@ Func _Main()
 	Opt("SendKeyDownDelay", 25)
 
 	; Detect if game window is present and has focus
-	ConsoleWrite("Waiting until game gets active focus" & @CRLF)
+	Debug("Waiting until game gets active focus")
 	WinWaitActive($title)
 
 	; Get window handle
@@ -39,7 +39,7 @@ Func _Main()
 		HandleItemReceived()
 
 		If DetectMainMenu() = 1 Then
-			ConsoleWrite("Detect: Main Menu" & @CRLF)
+			Debug("Detect: Main Menu")
 
 			HandleMissionRewards()
 
@@ -54,10 +54,10 @@ Func _Main()
 
 		; Game window must be active to continue
 		While WinActive($title) = 0
-			ConsoleWrite("Window Lost Focus" & @CRLF)
+			Debug("Window Lost Focus")
 
 			If WinExists($title) = 0 Then
-				ConsoleWrite("Window Closed" & @CRLF)
+				Debug("Window Closed")
 				Exit
 			EndIf
 
@@ -70,7 +70,7 @@ EndFunc
 ; Game Play Loop
 
 Func GamePlayLoop()
-	ConsoleWrite("Enter Gameplay Loop" & @CRLF)
+	Debug("Enter Gameplay Loop")
 
 	While 1
 		HandleAdvert()
@@ -80,26 +80,26 @@ Func GamePlayLoop()
 		; Fault tolerant approach
 		If DetectGameLost() = 1 Then
 			; Leave game on loss
-			ConsoleWrite("Detect: Game Lost" & @CRLF)
+			Debug("Detect: Game Lost")
 			LeaveGame()
 			_Sleep(1000)
 		ElseIf DetectGetReward() = 1 Then
 			; Claim participation reward
-			ConsoleWrite("Detect: Get Reward" & @CRLF)
+			Debug("Detect: Get Reward")
 			ClickGetReward()
 			_Sleep(1000)
 		ElseIf DetectGetStumbleJourneyReward() = 1 Then
 			; Claim stumble journey reward (click anywhere on the screen)
-			ConsoleWrite("Detect: Journey Reward" & @CRLF)
+			Debug("Detect: Journey Reward")
 			ClickGetReward()
 			_Sleep(1000)
 		ElseIf DetectGameResults() = 1 Then
 			; Round has finished, results are shown
 			; Must wait till screen goes away
-			ConsoleWrite("Detect: Game Results" & @CRLF)
+			Debug("Detect: Game Results")
 			_Sleep(1000)
 		ElseIf DetectGameRunning() = 1 Then
-			ConsoleWrite("Detect: Game Running" & @CRLF)
+			Debug("Detect: Game Running")
 			; Game is still on-going
 			; Warning: This condition will also be true for spectator mode on game loss (check loss first)
 			; AFK gameplay happens here
@@ -109,12 +109,12 @@ Func GamePlayLoop()
 		EndIf
 
 		If WinActive($title) = 0 Then
-			ConsoleWrite("Window Inactive" & @CRLF)
+			Debug("Window Inactive")
 			ExitLoop
 		EndIf
 	WEnd
 
-	ConsoleWrite("Exit Gameplay Loop" & @CRLF)
+	Debug("Exit Gameplay Loop")
 
 EndFunc
 
@@ -124,7 +124,7 @@ EndFunc
 Func HandleAdvert()
 	; Skip the advert
 	If DetectAdvert() = 1 Then
-		ConsoleWrite("Detect: Advert" & @CRLF)
+		Debug("Detect: Advert")
 		ClickAdvertClose()
 		_Sleep(500, 1000)
 	EndIf
@@ -133,7 +133,7 @@ EndFunc
 Func HandleLevelUp()
 	; Skip the stumble pass/journey level up screens
 	If DetectStumblePassLevelUp() = 1 Or DetectStumbleJourneyLevelUp() = 1 Then
-		ConsoleWrite("Detect: Level Up" & @CRLF)
+		Debug("Detect: Level Up")
 		ClickContinue()
 		_Sleep(500, 1000)
 	EndIf
@@ -142,7 +142,7 @@ EndFunc
 Func HandleItemReceived()
 	; Skip the item received screen
 	If DetectItemReceived() = 1 Then
-		ConsoleWrite("Detect: Item Received" & @CRLF)
+		Debug("Detect: Item Received")
 		ClickOK()
 		_Sleep(500, 1000)
 	EndIf
@@ -151,12 +151,12 @@ EndFunc
 Func HandleMissionRewards()
 	; Collect pending mission rewards
 	If DetectMainMenuMissionComplete() = 1 Then
-		ConsoleWrite("Detect: Mission Complete" & @CRLF)
+		Debug("Detect: Mission Complete")
 		ClickMissions()
 		_Sleep(1000)
 
 		While DetectMissionReward() = 1
-			ConsoleWrite("Detect: Mission Reward" & @CRLF)
+			Debug("Detect: Mission Reward")
 			CollectMissionReward()
 			_Sleep(1000)
 		WEnd
@@ -169,7 +169,7 @@ EndFunc
 Func HandleGameLoad()
 	; not necessary but helps to determine current state
 	While DetectGameSearch() = 1
-		ConsoleWrite("Detect: Game Search" & @CRLF)
+		Debug("Detect: Game Search")
 		If Random(0, 2) = 1 Then MouseRandom()
 		_Sleep(1000, 2000)
 	WEnd
@@ -178,7 +178,7 @@ Func HandleGameLoad()
 
 	; not necessary but helps to determine current state
 	While DetectMapSelection() = 1
-		ConsoleWrite("Detect: Map Selection" & @CRLF)
+		Debug("Detect: Map Selection")
 		If Random(0, 2) = 1 Then MouseRandom()
 		_Sleep(1000, 2000)
 	WEnd
@@ -190,14 +190,14 @@ Func HandleGameLoad()
 
 	; not necessary but helps to determine current state
 	While DetectGameStart() = 1
-		ConsoleWrite("Detect: Game Start" & @CRLF)
+		Debug("Detect: Game Start")
 		_Sleep(500)
 	WEnd
 
 	; There is a 3 second in game counter at the start of each round
-	ConsoleWrite("Waiting for Countdown" & @CRLF)
+	Debug("Waiting for Countdown")
 	_Sleep(3000)
-	ConsoleWrite("Game Ready" & @CRLF)
+	Debug("Game Ready")
 EndFunc
 
 Func HandleScreenTransition()
@@ -440,59 +440,59 @@ EndFunc
 ; Control functions 
 
 Func GoBack()
-	ConsoleWrite("Go Back" & @CRLF)
+	Debug("Go Back")
 	_Send("{ESC}")
 EndFunc
 
 Func LeaveGame()
-	ConsoleWrite("Leave Game" & @CRLF)
+	Debug("Leave Game")
 	_Send("{ESC}")
 EndFunc
 
 Func ClickMissions()
-	ConsoleWrite("Click Missions" & @CRLF)
+	Debug("Click Missions")
 	Local $x = Random(1760, 1875)
 	Local $y = Random(180, 260)
 	_LeftClick($x, $y)
 EndFunc
 
 Func CollectMissionReward()
-	ConsoleWrite("Collect Mission Reward" & @CRLF)
+	Debug("Collect Mission Reward")
 	Local $x = Random(345, 1710)
 	Local $y = Random(780, 880)
 	_LeftClick($x, $y)
 EndFunc
 
 Func ClickPlayGame()
-	ConsoleWrite("Click Play Game" & @CRLF)
+	Debug("Click Play Game")
 	Local $x = Random(1540, 1840)
 	Local $y = Random(930, 1030)
 	_LeftClick($x, $y)
 EndFunc
 
 Func ClickGetReward()
-	ConsoleWrite("Click Get Reward" & @CRLF)
+	Debug("Click Get Reward")
 	Local $x = Random(1499, 1809)
 	Local $y = Random(915, 1001)
 	_LeftClick($x, $y)
 EndFunc
 
 Func ClickContinue()
-	ConsoleWrite("Click Continue" & @CRLF)
+	Debug("Click Continue")
 	Local $x = Random(480, 520)
 	Local $y = Random(930, 970)
 	_LeftClick($x, $y)
 EndFunc
 
 Func ClickOK()
-	ConsoleWrite("Click OK" & @CRLF)
+	Debug("Click OK")
 	Local $x = Random(1605, 1645)
 	Local $y = Random(900, 940)
 	_LeftClick($x, $y)
 EndFunc
 
 Func ClickAdvertClose()
-	ConsoleWrite("Click Advert Close" & @CRLF)
+	Debug("Click Advert Close")
 	Local $x = Random(1553, 1563)
 	Local $y = Random(124, 134)
 	_LeftClick($x, $y)
@@ -502,7 +502,7 @@ EndFunc
 ; Gameplay functions
 
 Func SimulateGamePlay()
-	ConsoleWrite("Simulate Game Play" & @CRLF)
+	Debug("Simulate Game Play")
 
 	Local $n = 4
 	Local $keys[$n] = ["Left", "Right", "Jump", "Run"]
@@ -606,8 +606,8 @@ Func IsHexColorInRange($color, $targetHex, $tolerance, $log = 0)
 	Local $b2 = $targetRGB[2]
 
 	If $log = 1 Then
-		ConsoleWrite("Detected: " & $sourceHex & " / Wanted: " & $targetHex & @CRLF)
-		ConsoleWrite("Diff R: " & Abs($r1 - $r2) & ", G: " & Abs($g1 - $g2) & ", B: " & Abs($b1 - $b2) & @CRLF)
+		Debug("Detected: " & $sourceHex & " / Wanted: " & $targetHex)
+		Debug("Diff R: " & Abs($r1 - $r2) & ", G: " & Abs($g1 - $g2) & ", B: " & Abs($b1 - $b2))
 	EndIf
 
 	Return _
@@ -673,3 +673,9 @@ Func _Terminate()
 EndFunc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+Func Debug($msg)
+	If Not @Compiled Then
+		ConsoleWrite($msg & @CRLF)
+	EndIf
+EndFunc
