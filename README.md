@@ -20,12 +20,11 @@ The bot will join new gaming rounds over and over and claim in-game "Season Pass
 - It will not make any attempts to bypass obstacles
 - It will not reach the finish line
 
-
 ### Requirements
 - The game must be running and have the active window/input focus
 - The bot will stop working if the game closes or loses window focus
-- The game must be in **1920x1080** resolution
-- The game must be in **Fullscreen** mode
+- It has been tested in **Fullscreen** mode
+- It has been tested with **1920x1080** and **2560x1440** resolution
 - It has been tested with german and english game language
 - It has been tested with Windows 10 Pro
 
