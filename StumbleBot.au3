@@ -10,6 +10,8 @@ Global $hWnd = 0
 ; Window Properties
 Global $baseWidth = 1920
 Global $baseHeight = 1080
+Global $windowWidth = 1920
+Global $windowHeight = 1080
 
 ; Mouse Centering
 Global $centerX = Round($baseWidth/2)
@@ -21,8 +23,8 @@ Global $centerY = Round($baseHeight/2)
 _Main()
 Func _Main()
 	; Change AutoIt defaults
-	Opt("MouseCoordMode", 0)
-	Opt("PixelCoordMode", 0)
+	Opt("MouseCoordMode", 2)
+	Opt("PixelCoordMode", 2)
 	Opt("SendKeyDownDelay", 25)
 
 	; Detect if game window is present and has focus
@@ -31,8 +33,13 @@ Func _Main()
 
 	; Get window handle
 	$hWnd = WinGetHandle($title)
+	
+	; Get actual window size
+	Local $size = GetClientSize($hWnd)
+	$windowWidth = $size[0]
+	$windowHeight = $size[1]
 
-	; (main menu loop)
+	; (Main Menu loop)
 	While 1
 		HandleAdvert()
 		HandleLevelUp()
@@ -50,7 +57,7 @@ Func _Main()
 			HandleGameLoad()
 		EndIf
 
-		GamePlayLoop()
+		GameLoop()
 
 		; Game window must be active to continue
 		While WinActive($title) = 0
@@ -61,18 +68,20 @@ Func _Main()
 				Exit
 			EndIf
 
-			Sleep(5000)
+			_Sleep(3000)
 		WEnd
+
+		_Sleep(500)
 	WEnd
 EndFunc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Game Play Loop
+; Game Loop
 
-Func GamePlayLoop()
-	Debug("Enter Gameplay Loop")
+Func GameLoop()
+	Debug("Game Loop")
 
-	While 1
+	While WinActive($title)
 		HandleAdvert()
 		HandleLevelUp()
 		HandleItemReceived()
@@ -82,40 +91,32 @@ Func GamePlayLoop()
 			; Leave game on loss
 			Debug("Detect: Game Lost")
 			LeaveGame()
-			_Sleep(1000)
 		ElseIf DetectGetReward() = 1 Then
 			; Claim participation reward
 			Debug("Detect: Get Reward")
 			ClickGetReward()
-			_Sleep(1000)
 		ElseIf DetectGetStumbleJourneyReward() = 1 Then
 			; Claim stumble journey reward (click anywhere on the screen)
 			Debug("Detect: Journey Reward")
 			ClickGetReward()
-			_Sleep(1000)
 		ElseIf DetectGameResults() = 1 Then
 			; Round has finished, results are shown
 			; Must wait till screen goes away
 			Debug("Detect: Game Results")
-			_Sleep(1000)
 		ElseIf DetectGameRunning() = 1 Then
 			Debug("Detect: Game Running")
 			; Game is still on-going
 			; Warning: This condition will also be true for spectator mode on game loss (check loss first)
 			; AFK gameplay happens here
 			SimulateGamePlay()
+			ContinueLoop
 		Else
+			; Nothing detected
 			ExitLoop
 		EndIf
 
-		If WinActive($title) = 0 Then
-			Debug("Window Inactive")
-			ExitLoop
-		EndIf
+		_Sleep(2000)
 	WEnd
-
-	Debug("Exit Gameplay Loop")
-
 EndFunc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,7 +127,7 @@ Func HandleAdvert()
 	If DetectAdvert() = 1 Then
 		Debug("Detect: Advert")
 		ClickAdvertClose()
-		_Sleep(500, 1000)
+		_Sleep(1000)
 	EndIf
 EndFunc
 
@@ -135,7 +136,7 @@ Func HandleLevelUp()
 	If DetectStumblePassLevelUp() = 1 Or DetectStumbleJourneyLevelUp() = 1 Then
 		Debug("Detect: Level Up")
 		ClickContinue()
-		_Sleep(500, 1000)
+		_Sleep(1000)
 	EndIf
 EndFunc
 
@@ -144,7 +145,7 @@ Func HandleItemReceived()
 	If DetectItemReceived() = 1 Then
 		Debug("Detect: Item Received")
 		ClickOK()
-		_Sleep(500, 1000)
+		_Sleep(1000)
 	EndIf
 EndFunc
 
@@ -186,23 +187,24 @@ Func HandleGameLoad()
 	; center mouse
 	Mouse(Random($centerX-5, $centerX+5), Random($centerY, $centerY+10));
 
-	HandleScreenTransition()
-
 	; not necessary but helps to determine current state
-	While DetectGameStart() = 1
-		Debug("Detect: Game Start")
-		_Sleep(500)
-	WEnd
+	If DetectGameStart() = 1 Then
+		While DetectGameStart() = 1
+			Debug("Detect: Game Start")
+			_Sleep(500)
+		WEnd
 
-	; There is a 3 second in game counter at the start of each round
-	Debug("Waiting for Countdown")
-	_Sleep(3000)
-	Debug("Game Ready")
+		; There is a 3 second in game counter at the start of each round
+		Debug("Waiting for Countdown")
+		_Sleep(3000)
+		Debug("Game Ready")
+	EndIf
 EndFunc
 
 Func HandleScreenTransition()
 	While DetectScreenTransition() = 1
-		_Sleep(300, 600)
+		Debug("Detect: Screen Transition")
+		_Sleep(1000)
 	WEnd
 EndFunc
 
@@ -288,7 +290,7 @@ Func DetectAdvert()
 	; (Green bottom left purchase button)
 	Local $match1 = IsHexColorInRange(Pixel(719, 919), "B1FB76", 10)
 
-	; (Green bottom rifgt purchase button)
+	; (Green bottom right purchase button)
 	Local $match2 = IsHexColorInRange(Pixel(1167, 919), "7AB068", 10)
 
 	; (Purple top left)
@@ -308,96 +310,64 @@ EndFunc
 
 Func DetectScreenTransition()
 	; (Black screen)
-	Local $match1 = IsHexColorInRange(Pixel(50, 50), "000000", 10)
-	Local $match2 = IsHexColorInRange(Pixel(50, 950), "000000", 10)
-	Local $match3 = IsHexColorInRange(Pixel(1850, 50), "000000", 10)
-	Local $match4 = IsHexColorInRange(Pixel(1850, 950), "000000", 10)
-
-	; All of them should match
-	If $match1 And $match2 And $match3 And $match4 Then Return 1
+	If IsHexColorInRange(Pixel(50, 50), "000000", 15) And _
+		IsHexColorInRange(Pixel(50, 950), "000000", 15) And _
+		IsHexColorInRange(Pixel(1850, 50), "000000", 15) And _
+		IsHexColorInRange(Pixel(1850, 950), "000000", 15) Then
+			Return 1
+	EndIf
 
 	Return 0
 EndFunc
 
 Func DetectGameSearch()
 	; (Blue Abort Button)
-	If IsHexColorInRange(Pixel(65, 960), "128EEB", 10) Then Return 1
-
-	; (Blue Abort Button)
-	If IsHexColorInRange(Pixel(331, 1020), "1586EA", 10) Then Return 1
-
-	; (Blue Bottom Right)
-	If IsHexColorInRange(Pixel(1892, 1062), "69D8FA", 10) Then Return 1
-
-	; (Blue Top Right)
-	If IsHexColorInRange(Pixel(1879, 26), "527EF1", 10) Then Return 1
+	If IsHexColorInRange(Pixel(65, 960), "128EEB", 15) And _
+		IsHexColorInRange(Pixel(331, 1020), "1586EA", 15) And _
+		IsHexColorInRange(Pixel(1892, 1062), "69D8FA", 15) And _
+		IsHexColorInRange(Pixel(1879, 26), "527EF1", 15) Then
+			Return 1
+	EndIf
 
 	Return 0
 EndFunc
 
 Func DetectMapSelection()
-	; (Purple Top Left)
-	If IsHexColorInRange(Pixel(21, 75), "5B57CA", 10) Then Return 1
-
-	; (Purple Bottom Left)
-	If IsHexColorInRange(Pixel(46, 1047), "8279F3", 10) Then Return 1
-
-	; (Purple Top Right)
-	If IsHexColorInRange(Pixel(1847, 79), "5262D0", 10) Then Return 1
-
-	; (Purple Bottom Right)
-	If IsHexColorInRange(Pixel(1841, 1027), "6876FF", 10) Then Return 1
+	; (Purple Background)
+	If IsHexColorInRange(Pixel(21, 75), "5B57CA", 20) And _
+		IsHexColorInRange(Pixel(46, 1047), "8279F3", 20) And _
+		IsHexColorInRange(Pixel(1847, 79), "5262D0", 20) And _
+		IsHexColorInRange(Pixel(1841, 1027), "6876FF", 20) Then
+			Return 1
+	EndIf
 
 	Return 0
 EndFunc
 
 Func DetectGameStart()
 	; (White Screen Banner)
-	Local $match1 = IsHexColorInRange(Pixel(672, 72), "FFFFFF", 10)
-
-	; (White Screen Banner)
-	Local $match2 = IsHexColorInRange(Pixel(1250, 52), "FFFFFF", 10)
-
-	; Both of them should match
-	If $match1 And $match2 Then Return 1
+	If IsHexColorInRange(Pixel(672, 72), "FFFFFF", 10) And IsHexColorInRange(Pixel(1250, 52), "FFFFFF", 10) Then Return 1
 
 	Return 0
 EndFunc
 
 Func DetectGameRunning()
 	; (White Player Arrow)
-	Local $match1 = IsHexColorInRange(Pixel(959, 450), "FFFFFF", 10)
-
-	; (White Player Arrow)
-	Local $match2 = IsHexColorInRange(Pixel(961, 448), "FFFFFF", 10)
-
-	; Both of them should match
-	If $match1 And $match2 Then Return 1
+	If IsHexColorInRange(Pixel(955, 446), "FFFFFF", 10) And IsHexColorInRange(Pixel(962, 446), "FFFFFF", 10) Then Return 1
 
 	Return 0
 EndFunc
 
 Func DetectGameResults()
-	; (Purple border of flying screen thing)
-	If IsHexColorInRange(Pixel(673, 133), "840BE9", 10) Then Return 1
-
-	; (Purple border of flying screen thing)
-	If IsHexColorInRange(Pixel(678, 167), "EC43A7", 10) Then Return 1
+	; (Purple border of flying screen)
+	If IsHexColorInRange(Pixel(677, 111), "531EA6", 20) And IsHexColorInRange(Pixel(1237, 109), "491993", 20) Then Return 1
 
 	Return 0
 EndFunc
 
 Func DetectGameLost()
 	; (Red Leave Button) 
-	Local $match1 = IsHexColorInRange(Pixel(228, 969), "F7513F", 10)
-
-	; (Red Leave Button)
-	Local $match2 = IsHexColorInRange(Pixel(29, 994), "F44C39", 10)
-
-	; (White Text in Leave Button)
-	Local $match3 = IsHexColorInRange(Pixel(196, 1001), "FFFFFF", 10)
-
-	If $match1 And $match2 And $match3 Then Return 1
+	If IsHexColorInRange(Pixel(228, 969), "F7513F", 20) And IsHexColorInRange(Pixel(35, 969), "F44C39", 20) Then Return 1
 
 	Return 0
 EndFunc
@@ -428,10 +398,7 @@ EndFunc
 
 Func DetectGetReward()
 	; (Green Get Button)
-	If IsHexColorInRange(Pixel(1499, 915), "55DB1E", 10) Then Return 1
-
-	; (Green Get Button)
-	If IsHexColorInRange(Pixel(1809, 1001), "44D018", 10) Then Return 1
+	If IsHexColorInRange(Pixel(1499, 915), "55DB1E", 10) And IsHexColorInRange(Pixel(1809, 1001), "44D018", 10) Then Return 1
 
 	Return 0
 EndFunc
@@ -508,7 +475,7 @@ Func SimulateGamePlay()
 	Local $keys[$n] = ["Left", "Right", "Jump", "Run"]
 
 	For $counter = 1 to $n
-		If DetectGameRunning() = 0 Or DetectGameLost() = 1 Then
+		If WinActive($title) = 0 Or DetectGameRunning() = 0 Or DetectGameLost() = 1 Then
 			; Abort input on game loss to avoid waste of time
 			Return
 		EndIf
@@ -539,25 +506,25 @@ Func SimulateGamePlay()
 		_Send("{w up}")
 
 		; Short pause
-		_Sleep(500, 1000)
+		_Sleep(100, 1000)
 	Next
 EndFunc
 
 Func Left($ms = 500)
 	_Send("{a down}")
-	Sleep($ms)
+	_Sleep($ms)
 	_Send("{a up}")
 EndFunc
 
 Func Right($ms = 500)
 	_Send("{d down}")
-	Sleep($ms)
+	_Sleep($ms)
 	_Send("{d up}")
 EndFunc
 
 Func Jump($ms = 500)
 	_Send("{SPACE down}")
-	Sleep($ms)
+	_Sleep($ms)
 	_Send("{SPACE up}")
 EndFunc
 
@@ -570,7 +537,7 @@ Func Mouse($x, $y, $speed = 20)
 	TransformCoordinates($x, $y)
 	MouseMove($x, $y, $speed)
 
-	Sleep(50)
+	_Sleep(50)
 EndFunc
 
 Func MouseRandom($minSpeed = 20, $maxSpeed = 30)
@@ -604,16 +571,19 @@ Func IsHexColorInRange($color, $targetHex, $tolerance, $log = 0)
 	Local $r2 = $targetRGB[0]
 	Local $g2 = $targetRGB[1]
 	Local $b2 = $targetRGB[2]
-
-	If $log = 1 Then
-		Debug("Detected: " & $sourceHex & " / Wanted: " & $targetHex)
-		Debug("Diff R: " & Abs($r1 - $r2) & ", G: " & Abs($g1 - $g2) & ", B: " & Abs($b1 - $b2))
-	EndIf
-
-	Return _
+	
+	Local $isColorInRange = _
 		Abs($r1 - $r2) <= $tolerance And _
 		Abs($g1 - $g2) <= $tolerance And _
 		Abs($b1 - $b2) <= $tolerance
+
+	If $log = 1 And $isColorInRange = 0 Then
+		Debug("Detected: " & $sourceHex & " / Wanted: " & $targetHex)
+		Debug("Diff R: " & Abs($r1 - $r2) & ", G: " & Abs($g1 - $g2) & ", B: " & Abs($b1 - $b2))
+		_Sleep(500)
+	EndIf
+
+	Return $isColorInRange
 EndFunc
 
 Func HexToRGB($hex)
@@ -628,16 +598,19 @@ EndFunc
 ; Transform functions to support different screen resolutions
 
 Func TransformCoordinates(ByRef $x, ByRef $y)
-	Local $pos = WinGetPos($hWnd)
-	If @error Then Return
-
-	Local $currWidth = $pos[2]
-	Local $currHeight = $pos[3]
-
-	If $currWidth <> $baseWidth Or $currHeight <> $baseHeight Then
-		$x = Round($x * $currWidth / $baseWidth)
-		$y = Round($y * $currHeight / $baseHeight)
+	If $windowWidth <> $baseWidth Or $windowHeight <> $baseHeight Then
+		$x = Round($x * $windowWidth / $baseWidth)
+		$y = Round($y * $windowHeight / $baseHeight)
 	EndIf
+EndFunc
+
+Func GetClientSize($hWnd)
+	Local $r = DllStructCreate("int Left; int Top; int Right; int Bottom")
+	DllCall("user32.dll", "bool", "GetClientRect", "hwnd", $hWnd, "ptr", DllStructGetPtr($r))
+	Local $size[2]
+	$size[0] = DllStructGetData($r, "Right") - DllStructGetData($r, "Left")
+	$size[1] = DllStructGetData($r, "Bottom") - DllStructGetData($r, "Top")
+	Return $size
 EndFunc
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
